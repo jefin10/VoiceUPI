@@ -5,6 +5,8 @@ import numpy as np
 import re
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+import spacy
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for Flutter app
@@ -35,6 +37,18 @@ def preprocess_text(text):
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
     text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
     return text
+
+#@app.route('/keywordExtractor', methods=['POST'])
+def keyWordExtractor(text):
+    """Extract keywords from text using keyword_ner_model"""
+    # Load the NER model from keyword_ner_model directory
+    #text = request.json.get('text', '')
+    model_path = os.path.join(os.path.dirname(__file__), '../keyword_ner_model')
+    nlp = spacy.load(model_path)
+    doc = nlp(text)
+    keywords = [ent.text for ent in doc.ents]
+    return keywords
+    
 
 def predict_intent(text):
     """Predict intent from text input"""
@@ -103,8 +117,9 @@ def predict():
             "confidence_percentage": round(confidence * 100, 2),
             "status": "success"
         }
-        
-        return jsonify(response)
+            
+        keywords=keyWordExtractor(text)  
+        return jsonify([response, {"keywords": keywords}])
         
     except Exception as e:
         return jsonify({
