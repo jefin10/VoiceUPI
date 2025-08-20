@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'signup_page.dart';
 import 'verify_otp_page.dart';
 import 'voiceToText/voiceToText.dart';
+import 'payToContacts/payToContacts.dart';
 
 
 void main() {
@@ -411,6 +412,26 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               child: const Text(
                 'Go to Voice to Text',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>  PayToContactsPage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              child: const Text(
+                'Pay to Contacts',
                 style: TextStyle(fontSize: 16),
               ),
             ),
