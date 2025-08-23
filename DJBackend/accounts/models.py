@@ -24,3 +24,27 @@ class Transaction(models.Model):
     
     def __str__(self):
         return f"Transaction from {self.sender.user.upiName} to {self.receiver.user.upiName} - Amount: {self.amount} - Status: {self.status}"
+
+class MoneyRequest(models.Model):
+    requester = models.ForeignKey(UserAccount, related_name='sent_requests', on_delete=models.CASCADE)
+    requestee = models.ForeignKey(UserAccount, related_name='received_requests', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    message = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20, 
+        choices=[
+            ('pending', 'Pending'), 
+            ('approved', 'Approved'), 
+            ('rejected', 'Rejected'), 
+            ('cancelled', 'Cancelled')
+        ], 
+        default='pending'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Request from {self.requester.user.upiName} to {self.requestee.user.upiName} - Amount: {self.amount} - Status: {self.status}"

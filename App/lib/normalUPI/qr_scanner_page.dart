@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import '../payToUpiId/payToUpiId.dart';
+import 'my_qr_page.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -535,8 +536,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
   }
 
   void _showMyQR() {
-    // Navigate to a page showing user's QR code
-    _showSnackBar('My QR code feature coming soon!');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MyQRPage(),
+      ),
+    );
   }
 
   void _rescan() {

@@ -7,6 +7,7 @@ import '../payToUpiId/payToUpiId.dart';
 import 'qr_scanner_page.dart';
 import 'history_page.dart';
 import 'balance_page.dart';
+import 'request_money_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -236,7 +237,12 @@ class _HomePageState extends State<HomePage> {
               'Request',
               const Color(0xFFF59E0B),
               () {
-                // Add request money functionality
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RequestMoneyPage(),
+                  ),
+                );
               },
             ),
             _buildQuickAction(

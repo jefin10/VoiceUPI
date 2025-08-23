@@ -1,4 +1,4 @@
-from .views import SignUp, send_otp, verify_otp,searchNumber,checkHasAccount,searchByUpiId,sendMoneyPhone,getProfile, getTransactions, getBalance, sendMoneyId
+from .views import SignUp, send_otp, verify_otp,searchNumber,checkHasAccount,searchByUpiId,sendMoneyPhone,getProfile, getTransactions, getBalance, sendMoneyId, createMoneyRequest, createMoneyRequestByUpi, getMoneyRequests, updateRequestStatus
 from django.urls import path
 
 urlpatterns = [
@@ -12,5 +12,9 @@ urlpatterns = [
     path('sendMoneyId/',sendMoneyId,name='sendMoneyId'),
     path('getTransactions/',getTransactions,name='getTransactions'),
     path('sendMoneyPhone/',sendMoneyPhone,name='sendMoneyPhone'),
-    path('checkHasAccount/', checkHasAccount, name='checkAccount')
+    path('checkHasAccount/', checkHasAccount, name='checkAccount'),
+    path('createMoneyRequest/', createMoneyRequest, name='createMoneyRequest'),
+    path('createMoneyRequestByUpi/', createMoneyRequestByUpi, name='createMoneyRequestByUpi'),
+    path('getMoneyRequests/', getMoneyRequests, name='getMoneyRequests'),
+    path('updateRequestStatus/', updateRequestStatus, name='updateRequestStatus'),
 ]

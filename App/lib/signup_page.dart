@@ -37,7 +37,7 @@ class _SignupPageState extends State<SignupPage> {
         _error = null;
       });
       final response = await http.post(
-        Uri.parse('http://172.16.204.240:8000/accounts/signup/'),
+        Uri.parse('http://10.0.2.2:8000/accounts/signup/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'upiName': _nameController.text,

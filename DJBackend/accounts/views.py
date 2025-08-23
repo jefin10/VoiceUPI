@@ -7,7 +7,7 @@ import random
 from decimal import Decimal
 from rest_framework.decorators import api_view
 from .models import User
-from .models import UserAccount,Transaction
+from .models import UserAccount,Transaction, MoneyRequest
 # Create your views here.
 
 otp_store = {}
@@ -343,3 +343,248 @@ def checkHasAccount(request):
             'hasAccount': False,
             'status': 'error'
         }, status=404)
+
+# Money Request APIs
+@api_view(['POST'])
+def createMoneyRequest(request):
+    requester_phone = request.data.get('requesterPhone')
+    requestee_phone = request.data.get('requesteePhone')
+    amount = Decimal(str(request.data.get('amount')))
+    message = request.data.get('message', '')
+    
+    try:
+        requester = User.objects.get(phoneNumber=requester_phone)
+        requester_account = UserAccount.objects.get(user=requester)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requester not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requester account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        requestee = User.objects.get(phoneNumber=requestee_phone)
+        requestee_account = UserAccount.objects.get(user=requestee)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requestee not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requestee account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        money_request = MoneyRequest.objects.create(
+            requester=requester_account,
+            requestee=requestee_account,
+            amount=amount,
+            message=message,
+            status='pending'
+        )
+        money_request.save()
+        
+        return JsonResponse({
+            'message': f'Money request of ₹{amount} sent to {requestee.upiName}',
+            'requestId': money_request.id,
+            'status': 'success'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
+
+@api_view(['POST'])
+def createMoneyRequestByUpi(request):
+    requester_phone = request.data.get('requesterPhone')
+    requestee_upi = request.data.get('requesteeUpi')
+    amount = Decimal(str(request.data.get('amount')))
+    message = request.data.get('message', '')
+    
+    try:
+        requester = User.objects.get(phoneNumber=requester_phone)
+        requester_account = UserAccount.objects.get(user=requester)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requester not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requester account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        requestee = User.objects.get(upiMail=requestee_upi)
+        requestee_account = UserAccount.objects.get(user=requestee)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requestee not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'Requestee account not found',
+            'status': 'error'
+        }, status=404)
+    
+    try:
+        money_request = MoneyRequest.objects.create(
+            requester=requester_account,
+            requestee=requestee_account,
+            amount=amount,
+            message=message,
+            status='pending'
+        )
+        money_request.save()
+        
+        return JsonResponse({
+            'message': f'Money request of ₹{amount} sent to {requestee.upiName}',
+            'requestId': money_request.id,
+            'status': 'success'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
+
+@api_view(['GET'])
+def getMoneyRequests(request):
+    phone_number = request.GET.get('phoneNumber')
+    
+    try:
+        user = User.objects.get(phoneNumber=phone_number)
+        user_account = UserAccount.objects.get(user=user)
+        
+        # Get sent requests
+        sent_requests = MoneyRequest.objects.filter(requester=user_account).values(
+            'id', 'requestee__user__upiName', 'requestee__user__phoneNumber', 
+            'amount', 'message', 'status', 'created_at', 'updated_at'
+        )
+        
+        # Get received requests
+        received_requests = MoneyRequest.objects.filter(requestee=user_account).values(
+            'id', 'requester__user__upiName', 'requester__user__phoneNumber',
+            'amount', 'message', 'status', 'created_at', 'updated_at'
+        )
+        
+        return JsonResponse({
+            'sentRequests': list(sent_requests),
+            'receivedRequests': list(received_requests),
+            'status': 'success'
+        })
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'User account not found',
+            'status': 'error'
+        }, status=404)
+
+@api_view(['POST'])
+def updateRequestStatus(request):
+    request_id = request.data.get('requestId')
+    new_status = request.data.get('status')  # 'approved', 'rejected', 'cancelled'
+    phone_number = request.data.get('phoneNumber')
+    
+    try:
+        money_request = MoneyRequest.objects.get(id=request_id)
+        user = User.objects.get(phoneNumber=phone_number)
+        user_account = UserAccount.objects.get(user=user)
+        
+        # Check if user has permission to update this request
+        if money_request.requester != user_account and money_request.requestee != user_account:
+            return JsonResponse({
+                'error': 'Unauthorized to update this request',
+                'status': 'error'
+            }, status=403)
+        
+        # Validate status transitions
+        if new_status == 'cancelled' and money_request.requester != user_account:
+            return JsonResponse({
+                'error': 'Only requester can cancel the request',
+                'status': 'error'
+            }, status=403)
+        
+        if new_status in ['approved', 'rejected'] and money_request.requestee != user_account:
+            return JsonResponse({
+                'error': 'Only requestee can approve or reject the request',
+                'status': 'error'
+            }, status=403)
+        
+        if money_request.status != 'pending':
+            return JsonResponse({
+                'error': 'Request has already been processed',
+                'status': 'error'
+            }, status=400)
+        
+        # If approved, process the payment
+        if new_status == 'approved':
+            requestee_account = money_request.requestee
+            requester_account = money_request.requester
+            amount = money_request.amount
+            
+            # Check if requestee has sufficient balance
+            if requestee_account.balance < amount:
+                return JsonResponse({
+                    'error': 'Insufficient balance to approve request',
+                    'status': 'error'
+                }, status=400)
+            
+            # Process the payment
+            requestee_account.balance -= amount
+            requester_account.balance += amount
+            requestee_account.save()
+            requester_account.save()
+            
+            # Create transaction record
+            transaction = Transaction.objects.create(
+                sender=requestee_account,
+                receiver=requester_account,
+                amount=amount,
+                status='completed'
+            )
+            transaction.save()
+        
+        # Update request status
+        money_request.status = new_status
+        money_request.save()
+        
+        return JsonResponse({
+            'message': f'Request {new_status} successfully',
+            'status': 'success'
+        })
+        
+    except MoneyRequest.DoesNotExist:
+        return JsonResponse({
+            'error': 'Request not found',
+            'status': 'error'
+        }, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'status': 'error'
+        }, status=404)
+    except UserAccount.DoesNotExist:
+        return JsonResponse({
+            'error': 'User account not found',
+            'status': 'error'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e),
+            'status': 'error'
+        }, status=500)
