@@ -1,0 +1,101 @@
+version: "3.9"
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: voiceupi_db
+    environment:
+      POSTGRES_DB: voiceupi_db
+      POSTGRES_USER: voiceupi_user
+      POSTGRES_PASSWORD: voiceupi_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U voiceupi_user -d voiceupi_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - voiceupi_network
+
+  # Django Backend (UPI Transaction Service)
+  django:
+    build:
+      context: ./DJBackend
+      dockerfile: Dockerfile
+    container_name: voiceupi_django
+    environment:
+      - DEBUG=1
+      - DJANGO_SETTINGS_MODULE=DJBackend.settings
+      - DATABASE_URL=postgresql://voiceupi_user:voiceupi_password@db:5432/voiceupi_db
+      - POSTGRES_DB=voiceupi_db
+      - POSTGRES_USER=voiceupi_user
+      - POSTGRES_PASSWORD=voiceupi_password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - voiceupi_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Flask Backend (Intent Classification & Voice Assistant)
+  flask:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: voiceupi_flask
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=flask_server.py
+      - DJANGO_BASE_URL=http://django:8000/accounts
+    ports:
+      - "5002:5002"
+    depends_on:
+      - django
+    networks:
+      - voiceupi_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Rasa Conversational AI
+  rasa:
+    build:
+      context: ./Rasa
+      dockerfile: Dockerfile
+    container_name: voiceupi_rasa
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./Rasa/models:/app/models
+    command: run --enable-api --cors "*" --debug
+    networks:
+      - voiceupi_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+
+networks:
+  voiceupi_network:
+    driver: bridge
