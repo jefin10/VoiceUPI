@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
+import '../constants/app_colors.dart';
 
 class PayToPhonenumberPage extends StatelessWidget {
   const PayToPhonenumberPage({Key? key}) : super(key: key);
@@ -25,51 +26,47 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2A2B5A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF10B981),
-                size: 60,
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Icon(Icons.check_circle, color: AppColors.success, size: 48),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Payment Successful!',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 '₹${amount.toStringAsFixed(2)} sent to $recipientName',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
-                  child: const Text('Done'),
+                  child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -78,6 +75,7 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
       },
     );
   }
+
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _remarkController = TextEditingController();
@@ -103,7 +101,6 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
       return;
     }
     try {
-      // TODO: Replace with your actual backend URL
       final url = Uri.parse('$SEARCH_BY_PHONE_URL?phoneNumber=$phoneNumber');
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -180,52 +177,58 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
+      backgroundColor: AppColors.surfaceLight,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Pay to Phone Number', style: TextStyle(color: Colors.white)),
+        title: const Text('Pay to Phone', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildInputField(
-              controller: _controller,
-              label: 'Phone Number',
-              hint: 'Enter phone number',
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _searchUser,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A2B5A),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        side: const BorderSide(color: Color(0xFF6366F1), width: 1),
-                      ),
-                    ),
-                    child: _loading
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Search User'),
-                  ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.primary, AppColors.primaryDark],
                 ),
-              ],
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _buildInputField(
+                    controller: _controller,
+                    hint: 'Enter phone number',
+                    keyboardType: TextInputType.phone,
+                    isDark: true,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: _loading ? null : _searchUser,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            if (_error != null) _buildErrorCard(_error!),
-            if (_userData != null) _buildUserInfoCard(),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_error != null) ...[
+                    _buildErrorCard(_error!),
+                    const SizedBox(height: 20),
+                  ],
+                  if (_userData != null) _buildUserInfoCard(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -234,36 +237,46 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
 
   Widget _buildInputField({
     required TextEditingController controller,
-    required String label,
+    String? label,
     required String hint,
     required TextInputType keyboardType,
     Widget? suffixIcon,
     String? prefixText,
+    bool isDark = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        if (label != null) ...[
+          Text(
+            label,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+        ],
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400]),
+            hintStyle: TextStyle(color: isDark ? Colors.white60 : AppColors.textSecondary),
             prefixText: prefixText,
-            prefixStyle: const TextStyle(color: Colors.white),
+            prefixStyle: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary, fontSize: 16),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: const Color(0xFF2A2B5A),
+            fillColor: isDark ? Colors.white.withOpacity(0.15) : Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+              borderSide: isDark ? BorderSide.none : const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: isDark ? BorderSide.none : const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: isDark ? Colors.white : AppColors.primary, width: 2),
             ),
           ),
         ),
@@ -273,15 +286,17 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
 
   Widget _buildUserInfoCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.3),
-          width: 1,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -289,67 +304,97 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
           Row(
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(25),
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.person, color: Color(0xFF10B981), size: 24),
+                child: Center(
+                  child: Text(
+                    (_userData!['upiName'] ?? 'U')[0].toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.success,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(width: 15),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_userData!['upiName'] ?? 'Unknown User', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
-                    Text(_userData!['upiId'] ?? 'N/A', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                    Text(
+                      _userData!['upiName'] ?? 'Unknown User',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _userData!['upiId'] ?? 'N/A',
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.verified_user, color: Color(0xFF10B981), size: 20),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(Icons.verified, color: AppColors.success, size: 18),
+              ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           _buildInputField(
             controller: _amountController,
             label: 'Amount',
-            hint: 'Enter amount to send',
+            hint: 'Enter amount',
             keyboardType: TextInputType.number,
             prefixText: '₹ ',
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 16),
           _buildInputField(
             controller: _remarkController,
-            label: 'Remark (Optional)',
-            hint: 'Add a note for this payment',
+            label: 'Note (Optional)',
+            hint: 'Add a note',
             keyboardType: TextInputType.text,
           ),
-          const SizedBox(height: 25),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _sending ? null : _sendMoney,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
               ),
               child: _sending
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Send Money', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                  : const Text('Pay Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
-          if (_sendResult != null)
+          if (_sendResult != null && _sendResult != 'Payment successful!')
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Text(
-                _sendResult!,
-                style: TextStyle(color: _sendResult == 'Payment successful!' ? Color(0xFF10B981) : Color(0xFFEF4444)),
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(_sendResult!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
               ),
             ),
         ],
@@ -359,22 +404,16 @@ class PayToPhonenumberBodyState extends State<PayToPhonenumberBody> {
 
   Widget _buildErrorCard(String message) {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFEF4444).withOpacity(0.3),
-          width: 1,
-        ),
+        color: AppColors.error.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 20),
+          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(message, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 14)),
-          ),
+          Expanded(child: Text(message, style: const TextStyle(color: AppColors.error, fontSize: 14))),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 import '../voiceToText/voiceToText.dart';
 import '../services/intent_service.dart';
 
@@ -25,7 +26,7 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
     );
     _pulseAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.3,
+      end: 1.15,
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
@@ -48,225 +49,251 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Top Bar
-            _buildTopBar(),
-            const SizedBox(height: 40),
-
-            // Voice Assistant Title
-            _buildTitle(),
-            const SizedBox(height: 40),
-
-            // Main Voice Interface
-            Expanded(
+    return Scaffold(
+      backgroundColor: AppColors.surfaceLight,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildHeader()),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const SizedBox(height: 20),
                   _buildVoiceInterface(),
                   const SizedBox(height: 40),
                   _buildQuickCommands(),
+                  const Spacer(),
+                  _buildStartButton(),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Quick Access Button
-            _buildQuickAccessButton(),
+  Widget _buildHeader() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Voice Assistant',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      _buildServerStatus(),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _showHelpDialog,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.help_outline,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.lightbulb_outline, color: Colors.white.withOpacity(0.9), size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'AI-powered voice assistant for instant payments',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServerStatus() {
+    return GestureDetector(
+      onTap: _checkServerConnection,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: (_serverConnected ? AppColors.success : AppColors.error).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: _serverConnected ? AppColors.success : AppColors.error,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _serverConnected ? 'Online' : 'Offline',
+              style: TextStyle(
+                color: _serverConnected ? AppColors.success : AppColors.error,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopBar() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          onPressed: () {
-            // Show help dialog
-            _showHelpDialog();
-          },
-          icon: const Icon(
-            Icons.help_outline,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
-        const Text(
-          'Voice Assistant',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Row(
-          children: [
-            // Server status indicator
-            GestureDetector(
-              onTap: _checkServerConnection,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _serverConnected 
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.red.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _serverConnected ? Colors.green : Colors.red,
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _serverConnected ? Icons.cloud_done : Icons.cloud_off,
-                      color: _serverConnected ? Colors.green : Colors.red,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _serverConnected ? 'Online' : 'Offline',
-                      style: TextStyle(
-                        color: _serverConnected ? Colors.green : Colors.red,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.settings,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   void _showHelpDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Voice Assistant Help'),
-          content: const SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Available Commands:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 12),
-                Text('💰 Transfer Money:'),
-                Text('  "Send 500 rupees to 9876543210"'),
-                Text('  "Transfer 1000 to john@upi"'),
-                SizedBox(height: 8),
-                Text('💳 Check Balance:'),
-                Text('  "What is my balance?"'),
-                Text('  "Check my account balance"'),
-                SizedBox(height: 8),
-                Text('💸 Request Money:'),
-                Text('  "Request 300 from 9876543210"'),
-                Text('  "Ask dad for 500 rupees"'),
-                SizedBox(height: 8),
-                Text('💬 General Chat:'),
-                Text('  "Hello, how are you?"'),
-                Text('  "Tell me about yourself"'),
-              ],
-            ),
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Voice Commands',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildHelpItem('💰', 'Send Money', '"Send 500 to John"'),
+              _buildHelpItem('💳', 'Check Balance', '"What\'s my balance?"'),
+              _buildHelpItem('💸', 'Request Money', '"Request 300 from Mom"'),
+              _buildHelpItem('💬', 'General Chat', '"Hello, how are you?"'),
+              const SizedBox(height: 16),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Got it!'),
-            ),
-          ],
         );
       },
     );
   }
 
-  Widget _buildTitle() {
-    return Column(
-      children: [
-        const Text(
-          'How can I help you?',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          'I can transfer money, check balance, handle requests, or just chat!',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+  Widget _buildHelpItem(String emoji, String title, String example) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 24)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  example,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.psychology,
-                color: const Color(0xFF6366F1),
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'AI-Powered Voice Assistant',
-                style: TextStyle(
-                  color: const Color(0xFF6366F1),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildVoiceInterface() {
     return Column(
       children: [
-        // Main Microphone Button
+        const Text(
+          'Tap to speak',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'I can send money, check balance, or just chat!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 40),
         GestureDetector(
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const SpeechScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const SpeechScreen()),
             );
           },
           child: AnimatedBuilder(
@@ -275,54 +302,31 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
               return Transform.scale(
                 scale: _isListening ? _pulseAnimation.value : 1.0,
                 child: Container(
-                  width: 180,
-                  height: 180,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: _isListening
-                          ? [
-                              const Color(0xFF10B981),
-                              const Color(0xFF059669),
-                              const Color(0xFF047857),
-                            ]
-                          : [
-                              const Color(0xFF6366F1),
-                              const Color(0xFF8B5CF6),
-                              const Color(0xFFA855F7),
-                            ],
+                      colors: [AppColors.primary, AppColors.primaryLight],
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: (_isListening 
-                            ? const Color(0xFF10B981) 
-                            : const Color(0xFF6366F1)).withOpacity(0.4),
-                        blurRadius: 30,
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 25,
                         spreadRadius: 5,
                       ),
                     ],
                   ),
-                  child: Icon(
-                    _isListening ? Icons.stop : Icons.mic,
+                  child: const Icon(
+                    Icons.mic,
                     color: Colors.white,
-                    size: 80,
+                    size: 60,
                   ),
                 ),
               );
             },
-          ),
-        ),
-        const SizedBox(height: 30),
-
-        // Status Text
-        Text(
-          _isListening ? 'Listening...' : 'Tap to speak',
-          style: TextStyle(
-            color: _isListening ? const Color(0xFF10B981) : Colors.grey[400],
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -331,171 +335,122 @@ class _VoiceAssistantPageState extends State<VoiceAssistantPage>
 
   Widget _buildQuickCommands() {
     final commands = [
-      {
-        'text': 'Send ₹500 to 9876543210',
-        'description': 'Transfer money to phone number',
-        'icon': Icons.send,
-        'color': Colors.green,
-      },
-      {
-        'text': 'Check my balance',
-        'description': 'View current account balance',
-        'icon': Icons.account_balance_wallet,
-        'color': Colors.blue,
-      },
-      {
-        'text': 'Request ₹300 from 9123456789',
-        'description': 'Request money from contact',
-        'icon': Icons.request_quote,
-        'color': Colors.purple,
-      },
-      {
-        'text': 'Hello, how are you?',
-        'description': 'General conversation',
-        'icon': Icons.chat,
-        'color': Colors.orange,
-      },
+      {'icon': Icons.send, 'text': 'Send ₹500 to 9876543210', 'color': AppColors.success},
+      {'icon': Icons.account_balance_wallet, 'text': 'Check my balance', 'color': AppColors.accentBlue},
+      {'icon': Icons.call_received, 'text': 'Request ₹300 from friend', 'color': AppColors.primary},
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Try saying:',
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 15),
-        ...commands.map((command) => _buildEnhancedCommandChip(command)).toList(),
-      ],
-    );
-  }
-
-  Widget _buildEnhancedCommandChip(Map<String, dynamic> command) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SpeechScreen(),
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF2A2B5A),
-                const Color(0xFF2A2B5A).withOpacity(0.8),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: (command['color'] as Color).withOpacity(0.3),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (command['color'] as Color).withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: (command['color'] as Color).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  command['icon'] as IconData,
-                  color: command['color'] as Color,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '"${command['text']}"',
-                      style: TextStyle(
-                        color: Colors.grey[200],
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      command['description'] as String,
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[500],
-                size: 16,
-              ),
-            ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Try saying',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
+          const SizedBox(height: 16),
+          ...commands.map((cmd) => _buildCommandChip(
+            cmd['icon'] as IconData,
+            cmd['text'] as String,
+            cmd['color'] as Color,
+          )),
+        ],
       ),
     );
   }
 
-  Widget _buildQuickAccessButton() {
-    return Container(
-      width: double.infinity,
-      height: 60,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6),
+  Widget _buildCommandChip(IconData icon, String text, Color color) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SpeechScreen()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '"$text"',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: AppColors.textGray, size: 20),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
       ),
+    );
+  }
+
+  Widget _buildStartButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
       child: ElevatedButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const SpeechScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const SpeechScreen()),
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
-        child: const Text(
-          'Start Voice Command',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.mic, size: 22),
+            SizedBox(width: 10),
+            Text(
+              'Start Voice Command',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

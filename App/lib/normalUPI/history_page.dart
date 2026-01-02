@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
+import '../constants/app_colors.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -91,9 +92,9 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
+      backgroundColor: AppColors.surfaceLight,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -101,25 +102,47 @@ class _HistoryPageState extends State<HistoryPage> {
         ),
         title: const Text(
           'Transaction History',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // Implement search
-            },
+            onPressed: () {},
           ),
         ],
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _error != null
-              ? Center(child: Text(_error!, style: TextStyle(color: Colors.red)))
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: AppColors.error.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               : Column(
                   children: [
                     _buildFilterTabs(),
-                    const SizedBox(height: 20),
                     Expanded(child: _buildTransactionList()),
                   ],
                 ),
@@ -128,48 +151,44 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _buildFilterTabs() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      height: 50,
-      child: ListView.builder(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        itemCount: _filters.length,
-        itemBuilder: (context, index) {
-          final filter = _filters[index];
-          final isSelected = filter == _selectedFilter;
-          
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedFilter = filter;
-              });
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 15),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? const Color(0xFF6366F1)
-                    : const Color(0xFF2A2B5A),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: isSelected 
-                      ? const Color(0xFF6366F1)
-                      : Colors.transparent,
-                  width: 1,
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  filter,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey[400],
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        child: Row(
+          children: _filters.map((filter) {
+            final isSelected = filter == _selectedFilter;
+            return Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedFilter = filter;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    filter,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -184,8 +203,31 @@ class _HistoryPageState extends State<HistoryPage> {
             return true;
           }).toList();
 
+    if (filteredTransactions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 64,
+              color: AppColors.textSecondary.withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No transactions found',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
       itemCount: filteredTransactions.length,
       itemBuilder: (context, index) {
         final transaction = filteredTransactions[index];
@@ -198,112 +240,91 @@ class _HistoryPageState extends State<HistoryPage> {
     final isSent = transaction['type'] == 'sent';
     final isCompleted = transaction['status'] == 'completed';
     
-    Color statusColor;
-    IconData statusIcon;
-    
-    if (transaction['status'] == 'completed') {
-      statusColor = const Color(0xFF10B981);
-      statusIcon = isSent ? Icons.arrow_upward : Icons.arrow_downward;
-    } else {
-      statusColor = const Color(0xFFEF4444);
-      statusIcon = Icons.error_outline;
-    }
+    Color statusColor = isCompleted ? AppColors.success : AppColors.error;
+    IconData statusIcon = isSent ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: statusColor.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Status Icon
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              statusIcon,
-              color: statusColor,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 15),
-
-          // Transaction Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      isSent ? 'To ${transaction['recipient']}' : 'From ${transaction['recipient']}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      '${isSent ? '-' : '+'}₹${transaction['amount'].toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: isSent ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      transaction['id'],
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12,
-                      ),
-                    ),
-                    Text(
-                      '${transaction['date']} • ${transaction['time']}',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    transaction['status'].toString().toUpperCase(),
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: (isSent ? AppColors.error : AppColors.success).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            statusIcon,
+            color: isSent ? AppColors.error : AppColors.success,
+            size: 22,
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                isSent ? 'To ${transaction['recipient']}' : 'From ${transaction['recipient']}',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '${isSent ? '-' : '+'}₹${transaction['amount'].toStringAsFixed(2)}',
+              style: TextStyle(
+                color: isSent ? AppColors.error : AppColors.success,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  transaction['status'].toString().toUpperCase(),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                '${transaction['date']} • ${transaction['time']}',
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

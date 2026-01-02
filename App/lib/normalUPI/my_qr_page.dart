@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
+import '../constants/app_colors.dart';
 
 class MyQRPage extends StatefulWidget {
   const MyQRPage({super.key});
@@ -77,17 +78,15 @@ class _MyQRPageState extends State<MyQRPage> {
 
   String _generateQRData() {
     if (_userUpiId == null) return '';
-    
-    // Generate UPI QR code format
     return 'upi://pay?pa=$_userUpiId&pn=${Uri.encodeComponent(_userName ?? 'User')}&cu=INR';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
+      backgroundColor: AppColors.surfaceLight,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -95,7 +94,7 @@ class _MyQRPageState extends State<MyQRPage> {
         ),
         title: const Text(
           'My QR Code',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
@@ -105,11 +104,7 @@ class _MyQRPageState extends State<MyQRPage> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF6366F1),
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildErrorState()
               : _buildQRContent(),
@@ -119,25 +114,25 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget _buildErrorState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Color(0xFFEF4444),
-              size: 60,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: const Icon(Icons.error_outline, color: AppColors.error, size: 48),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               _error!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -147,8 +142,10 @@ class _MyQRPageState extends State<MyQRPage> {
                 _loadUserData();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Retry'),
             ),
@@ -160,23 +157,24 @@ class _MyQRPageState extends State<MyQRPage> {
 
   Widget _buildQRContent() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // User Info Card
           _buildUserInfoCard(),
-          const SizedBox(height: 30),
-
-          // QR Code Container
-          _buildQRCodeContainer(),
-          const SizedBox(height: 30),
-
-          // Instructions
-          _buildInstructions(),
-          const SizedBox(height: 30),
-
-          // Action Buttons
-          _buildActionButtons(),
+          Transform.translate(
+            offset: const Offset(0, -40),
+            child: _buildQRCodeContainer(),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                _buildInstructions(),
+                const SizedBox(height: 20),
+                _buildActionButtons(),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -185,58 +183,47 @@ class _MyQRPageState extends State<MyQRPage> {
   Widget _buildUserInfoCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6),
-            Color(0xFFA855F7),
-          ],
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 60),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
-        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(40),
+              borderRadius: BorderRadius.circular(36),
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 40,
+            child: Center(
+              child: Text(
+                (_userName ?? 'U')[0].toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 12),
           Text(
             _userName ?? 'User',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 4),
           Text(
             _userUpiId ?? '',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            _phoneNumber ?? '',
-            style: const TextStyle(
-              color: Colors.white60,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
           ),
         ],
       ),
@@ -245,15 +232,16 @@ class _MyQRPageState extends State<MyQRPage> {
 
   Widget _buildQRCodeContainer() {
     return Container(
-      padding: const EdgeInsets.all(30),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.3),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -262,28 +250,24 @@ class _MyQRPageState extends State<MyQRPage> {
           QrImageView(
             data: _generateQRData(),
             version: QrVersions.auto,
-            size: 250.0,
+            size: 220.0,
             backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            foregroundColor: AppColors.textPrimary,
             errorCorrectionLevel: QrErrorCorrectLevel.M,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           const Text(
-            'Scan to Pay',
+            'Scan to Pay Me',
             style: TextStyle(
-              color: Color(0xFF1A1B3A),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 5),
-          Text(
-            'Show this QR code to receive payments',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
+          const SizedBox(height: 4),
+          const Text(
+            'Show this QR to receive payments',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
           ),
         ],
       ),
@@ -292,44 +276,48 @@ class _MyQRPageState extends State<MyQRPage> {
 
   Widget _buildInstructions() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withOpacity(0.3),
-          width: 1,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: Color(0xFF6366F1),
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
               ),
-              SizedBox(width: 8),
-              Text(
-                'How to use this QR code',
+              const SizedBox(width: 12),
+              const Text(
+                'How it works',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 15),
-          _buildInstructionStep('1', 'Show this QR code to someone who wants to pay you'),
-          const SizedBox(height: 10),
-          _buildInstructionStep('2', 'They can scan it with any UPI app'),
-          const SizedBox(height: 10),
-          _buildInstructionStep('3', 'They enter the amount and complete the payment'),
-          const SizedBox(height: 10),
-          _buildInstructionStep('4', 'You will receive the money instantly'),
+          const SizedBox(height: 16),
+          _buildInstructionStep('1', 'Show this QR to anyone who wants to pay you'),
+          const SizedBox(height: 12),
+          _buildInstructionStep('2', 'They scan it with any UPI app'),
+          const SizedBox(height: 12),
+          _buildInstructionStep('3', 'Money is received instantly'),
         ],
       ),
     );
@@ -337,35 +325,28 @@ class _MyQRPageState extends State<MyQRPage> {
 
   Widget _buildInstructionStep(String number, String text) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.2),
+            color: AppColors.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: Text(
               number,
               style: const TextStyle(
-                color: Color(0xFF6366F1),
+                color: AppColors.primary,
                 fontSize: 12,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Colors.grey[300],
-              fontSize: 14,
-            ),
-          ),
+          child: Text(text, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
         ),
       ],
     );
@@ -378,36 +359,29 @@ class _MyQRPageState extends State<MyQRPage> {
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _shareQR,
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share_rounded, size: 20),
             label: const Text('Share QR Code'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          child: OutlinedButton.icon(
             onPressed: _saveQR,
-            icon: const Icon(Icons.download),
+            icon: const Icon(Icons.download_rounded, size: 20),
             label: const Text('Save to Gallery'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2A2B5A),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(
-                  color: Color(0xFF6366F1),
-                  width: 1,
-                ),
-              ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              side: const BorderSide(color: AppColors.primary),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
@@ -416,21 +390,23 @@ class _MyQRPageState extends State<MyQRPage> {
   }
 
   void _shareQR() {
-    // Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality will be implemented'),
-        backgroundColor: Color(0xFF2A2B5A),
+      SnackBar(
+        content: const Text('Share feature coming soon'),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
   void _saveQR() {
-    // Implement save to gallery functionality
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Save to gallery functionality will be implemented'),
-        backgroundColor: Color(0xFF2A2B5A),
+      SnackBar(
+        content: const Text('Save feature coming soon'),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

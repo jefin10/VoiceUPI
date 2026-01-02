@@ -128,7 +128,6 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
         setState(() {
           _error = 'Invalid OTP';
         });
-        // Clear OTP fields
         for (var controller in _otpControllers) {
           controller.clear();
         }
@@ -144,115 +143,106 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+      backgroundColor: AppColors.surfaceLight,
+      body: Column(
+        children: [
+          // Purple header section
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 16,
+              right: 16,
+              bottom: 40,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.primary, AppColors.primaryDark],
+              ),
+            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Back button row
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
                 const SizedBox(height: 20),
-                
-                // Back button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: AppColors.textWhite),
-                    onPressed: () => Navigator.pop(context),
+                // Lock icon
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white,
+                    size: 36,
                   ),
                 ),
-                
                 const SizedBox(height: 20),
-                
-                // Header
-                _buildHeader(),
-                const SizedBox(height: 50),
-                
-                // OTP Input
-                _buildOtpInput(),
-                const SizedBox(height: 20),
-                
-                // Error/Info Message
-                if (_error != null || _info != null) ...[
-                  _buildMessage(),
-                  const SizedBox(height: 20),
-                ],
-                
-                const SizedBox(height: 30),
-                
-                // Verify Button
-                _buildVerifyButton(),
-                const SizedBox(height: 30),
-                
-                // Resend OTP
-                _buildResendOtp(),
-                
-                const Spacer(),
-                
-                // Help Text
-                _buildHelpText(),
-                const SizedBox(height: 20),
+                const Text(
+                  'OTP Verification',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Enter the code sent to ${widget.phoneNumber}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryPurple.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+          // White card section
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              transform: Matrix4.translationValues(0, -24, 0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
               ),
-            ],
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildOtpInput(),
+                    const SizedBox(height: 24),
+                    if (_error != null || _info != null) ...[
+                      _buildMessage(),
+                      const SizedBox(height: 24),
+                    ],
+                    _buildVerifyButton(),
+                    const SizedBox(height: 24),
+                    _buildResendOtp(),
+                    const SizedBox(height: 40),
+                    _buildHelpText(),
+                  ],
+                ),
+              ),
+            ),
           ),
-          child: const Icon(
-            Icons.lock_outline_rounded,
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'OTP Verification',
-          style: TextStyle(
-            color: AppColors.textWhite,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Enter the code sent to',
-          style: TextStyle(
-            color: AppColors.textGray,
-            fontSize: 15,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          widget.phoneNumber,
-          style: const TextStyle(
-            color: AppColors.primaryPurple,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -261,16 +251,16 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: List.generate(6, (index) {
         return SizedBox(
-          width: 50,
-          height: 60,
+          width: 48,
+          height: 56,
           child: TextField(
             controller: _otpControllers[index],
             focusNode: _focusNodes[index],
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
             ),
             keyboardType: TextInputType.number,
             maxLength: 1,
@@ -278,24 +268,18 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
             decoration: InputDecoration(
               counterText: '',
               filled: true,
-              fillColor: AppColors.cardBackground,
+              fillColor: AppColors.surfaceLight,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: AppColors.cardBackground,
-                  width: 2,
-                ),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.primaryPurple,
-                  width: 2,
-                ),
+                borderSide: const BorderSide(color: AppColors.primary, width: 2),
               ),
             ),
             onChanged: (value) {
@@ -304,8 +288,6 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
               } else if (value.isEmpty && index > 0) {
                 _focusNodes[index - 1].requestFocus();
               }
-              
-              // Auto verify when all fields are filled
               if (index == 5 && value.isNotEmpty) {
                 final otp = _otpControllers.map((c) => c.text).join();
                 if (otp.length == 6) {
@@ -326,10 +308,6 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
       decoration: BoxDecoration(
         color: (isError ? AppColors.error : AppColors.success).withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: (isError ? AppColors.error : AppColors.success).withOpacity(0.3),
-          width: 1,
-        ),
       ),
       child: Row(
         children: [
@@ -354,32 +332,24 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
   }
 
   Widget _buildVerifyButton() {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryPurple.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
       child: ElevatedButton(
         onPressed: _isVerifying ? null : _verifyOtp,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
+          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
         ),
         child: _isVerifying
             ? const SizedBox(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
                   color: Colors.white,
                   strokeWidth: 2.5,
@@ -388,10 +358,8 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
             : const Text(
                 'Verify OTP',
                 style: TextStyle(
-                  color: Colors.white,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
       ),
@@ -402,35 +370,31 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
+        const Text(
           'Didn\'t receive the code? ',
           style: TextStyle(
-            color: AppColors.textGray,
+            color: AppColors.textSecondary,
             fontSize: 14,
           ),
         ),
         if (_resendTimer > 0)
           Text(
             'Resend in $_resendTimer s',
-            style: TextStyle(
-              color: AppColors.textGrayLight,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           )
         else
-          TextButton(
-            onPressed: _isSending ? null : _sendOtp,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 0),
-            ),
+          GestureDetector(
+            onTap: _isSending ? null : _sendOtp,
             child: Text(
               _isSending ? 'Sending...' : 'Resend',
               style: const TextStyle(
-                color: AppColors.primaryPurple,
+                color: AppColors.primary,
                 fontSize: 14,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -439,13 +403,31 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> with SingleTickerProvider
   }
 
   Widget _buildHelpText() {
-    return Text(
-      'Enter the 6-digit code we sent to your phone number',
-      style: TextStyle(
-        color: AppColors.textGrayLight,
-        fontSize: 12,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(12),
       ),
-      textAlign: TextAlign.center,
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: AppColors.textSecondary.withOpacity(0.6),
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Enter the 6-digit code we sent to your phone',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

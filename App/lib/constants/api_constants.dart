@@ -8,8 +8,9 @@
 // - Physical Device: use your computer's IP address
 
 
-const String DJANGO_BASE_URL = 'http://192.168.1.2:8000';
-const String INTENT_API_URL = 'http://192.168.1.2:5000';
+const String DJANGO_BASE_URL = 'http://172.16.197.199:8000';
+const String INTENT_API_URL = 'http://172.16.197.199:5002';
+const String RASA_BASE_URL = 'http://172.16.197.199:5005';
 
 // ==================== ENDPOINTS ====================
 
@@ -46,3 +47,6 @@ const String UPDATE_REQUEST_URL =
 // Intent Classification
 const String CLASSIFY_INTENT_URL = '$INTENT_API_URL/voice_command';
 const String VOICE_COMMAND_URL = '$INTENT_API_URL/voice_command';
+
+// Rasa Chatbot
+const String RASA_CHAT_URL = '$RASA_BASE_URL/webhooks/rest/webhook';

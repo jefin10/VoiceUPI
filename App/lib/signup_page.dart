@@ -88,99 +88,119 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 60),
-                    
-                    // Logo and Title
-                    _buildHeader(),
-                    const SizedBox(height: 50),
-
-                    // Name Input
-                    _buildInputField(
-                      controller: _nameController,
-                      label: 'Full Name',
-                      hint: 'Enter your full name',
-                      icon: Icons.person_outline,
-                      keyboardType: TextInputType.name,
-                      validator: (value) => 
-                        value == null || value.isEmpty ? 'Please enter your name' : null,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.primary, AppColors.primaryDark],
+            stops: [0.0, 0.3],
+          ),
+        ),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                _buildHeader(),
+                const SizedBox(height: 30),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
                     ),
-                    const SizedBox(height: 20),
-
-                    // Phone Input
-                    _buildInputField(
-                      controller: _phoneController,
-                      label: 'Phone Number',
-                      hint: 'Enter your 10-digit mobile number',
-                      icon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                      maxLength: 10,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        if (value.length != 10) {
-                          return 'Phone number must be 10 digits';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Error Message
-                    if (_error != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.error.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Icon(Icons.error_outline, color: AppColors.error, size: 20),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                _error!,
-                                style: const TextStyle(
-                                  color: AppColors.error,
-                                  fontSize: 13,
-                                ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Create Account',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Enter your details to get started',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            _buildInputField(
+                              controller: _nameController,
+                              label: 'Full Name',
+                              hint: 'Enter your full name',
+                              icon: Icons.person_outline,
+                              keyboardType: TextInputType.name,
+                              validator: (value) => 
+                                value == null || value.isEmpty ? 'Please enter your name' : null,
+                            ),
+                            const SizedBox(height: 20),
+                            _buildInputField(
+                              controller: _phoneController,
+                              label: 'Phone Number',
+                              hint: 'Enter your 10-digit mobile number',
+                              icon: Icons.phone_outlined,
+                              keyboardType: TextInputType.phone,
+                              maxLength: 10,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your phone number';
+                                }
+                                if (value.length != 10) {
+                                  return 'Phone number must be 10 digits';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            if (_error != null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _error!,
+                                        style: const TextStyle(color: AppColors.error, fontSize: 13),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                            const SizedBox(height: 20),
+                            _buildContinueButton(),
+                            const SizedBox(height: 30),
+                            _buildTermsText(),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                    ],
-
-                    const SizedBox(height: 30),
-
-                    // Continue Button
-                    _buildContinueButton(),
-                    const SizedBox(height: 40),
-
-                    // Terms and conditions
-                    _buildTermsText(),
-                    const SizedBox(height: 30),
-                  ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -191,16 +211,15 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   Widget _buildHeader() {
     return Column(
       children: [
-        // App Logo/Icon
         Container(
-          width: 80,
-          height: 80,
+          width: 70,
+          height: 70,
           decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(20),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryPurple.withOpacity(0.3),
+                color: Colors.black.withOpacity(0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -208,28 +227,27 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           ),
           child: const Icon(
             Icons.account_balance_wallet_rounded,
-            color: Colors.white,
-            size: 40,
+            color: AppColors.primary,
+            size: 36,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         const Text(
-          'Welcome to VoiceUPI',
+          'VoiceUPI',
           style: TextStyle(
-            color: AppColors.textWhite,
+            color: Colors.white,
             fontSize: 28,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
-          'India\'s smartest voice-powered payment app',
+          'Voice-powered payments',
           style: TextStyle(
-            color: AppColors.textGray,
-            fontSize: 15,
+            color: Colors.white.withOpacity(0.8),
+            fontSize: 14,
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -250,7 +268,7 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
         Text(
           label,
           style: const TextStyle(
-            color: AppColors.textWhite,
+            color: AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -260,53 +278,38 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
           controller: controller,
           keyboardType: keyboardType,
           maxLength: maxLength,
-          style: const TextStyle(color: AppColors.textWhite, fontSize: 16),
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
           inputFormatters: keyboardType == TextInputType.phone
               ? [FilteringTextInputFormatter.digitsOnly]
               : null,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: AppColors.textGray.withOpacity(0.5)),
-            prefixIcon: Icon(icon, color: AppColors.primaryPurple),
+            hintStyle: TextStyle(color: AppColors.textGray),
+            prefixIcon: Icon(icon, color: AppColors.primary),
             filled: true,
-            fillColor: AppColors.cardBackground,
+            fillColor: AppColors.surfaceLight,
             counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: AppColors.divider),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(
-                color: AppColors.cardBackground,
-                width: 1,
-              ),
+              borderSide: BorderSide(color: AppColors.divider),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.primaryPurple,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 1,
-              ),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           validator: validator,
         ),
@@ -315,27 +318,18 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
   }
 
   Widget _buildContinueButton() {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryPurple.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return SizedBox(
+      height: 54,
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submitSignup,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
+          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
         ),
         child: _isLoading
             ? const SizedBox(
@@ -349,10 +343,8 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
             : const Text(
                 'Continue',
                 style: TextStyle(
-                  color: Colors.white,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
       ),
@@ -363,25 +355,16 @@ class _SignupPageState extends State<SignupPage> with SingleTickerProviderStateM
     return Text.rich(
       TextSpan(
         text: 'By continuing, you agree to our ',
-        style: TextStyle(
-          color: AppColors.textGrayLight,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         children: const [
           TextSpan(
             text: 'Terms of Service',
-            style: TextStyle(
-              color: AppColors.primaryPurple,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
           ),
           TextSpan(text: ' and '),
           TextSpan(
             text: 'Privacy Policy',
-            style: TextStyle(
-              color: AppColors.primaryPurple,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
           ),
         ],
       ),

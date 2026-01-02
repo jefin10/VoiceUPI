@@ -376,98 +376,90 @@ def process_voice_command():
         # Step 1: Intent Classification
         predicted_intent, confidence = predict_intent(text)
         
+        confidence_percentage = round(confidence * 100, 2)
+        
         response = {
             "input_text": text,
             "predicted_intent": predicted_intent,
             "confidence": round(confidence, 4),
-            "confidence_percentage": round(confidence * 100, 2),
+            "confidence_percentage": confidence_percentage,
             "status": "success"
         }
         
-        # Step 2: Process based on intent following your specified workflow
+        # CONFIDENCE THRESHOLD CHECK: If confidence < 70%, route to Rasa for casual conversation
+        if confidence_percentage < 70.0:
+            print(f"Low confidence ({confidence_percentage}%), routing to Rasa...")
+            response.update({
+                "assistant_message": "Let me help you with that.",
+                "source": "intent_classifier",
+                "action": "route_to_rasa",
+                "route_to_rasa": True,
+                "reason": "low_confidence"
+            })
+            print(f"Response: {response}")
+            return jsonify(response)
+        
+        # Step 2: Process based on intent (only if confidence >= 70%)
+        print(f"High confidence ({confidence_percentage}%), processing intent: {predicted_intent}")
         if predicted_intent == 'transfer_money':
-            print("Processing transfer money request...")
-            # Workflow: intent classifier -> entity -> Mock response (Django disabled)
+            print("Processing transfer money request - extracting entities...")
             entities = extract_entities(text, predicted_intent)
             
-            # MOCK RESPONSE - Django backend disabled for now
             if 'amount' in entities:
-                django_response = {
-                    'status': 'success',
-                    'message': f'Mock: Transfer of ₹{entities["amount"]} initiated successfully!'
-                }
                 assistant_message = f'Ready to send ₹{entities["amount"]}'
                 if 'recipient_name' in entities:
                     assistant_message += f' to {entities["recipient_name"]}'
-                assistant_message += ' (Mock mode - Django disabled)'
+                elif 'phone_number' in entities:
+                    assistant_message += f' to {entities["phone_number"]}'
+                elif 'upi_id' in entities:
+                    assistant_message += f' to {entities["upi_id"]}'
             else:
-                django_response = {
-                    'status': 'error',
-                    'error': 'Amount not specified',
-                    'suggestion': 'Try saying: "Send 500 rupees to [name]"'
-                }
                 assistant_message = 'Amount not specified. Please mention the amount to transfer.'
             
             response.update({
                 "entities": entities,
-                "django_response": django_response,
                 "assistant_message": assistant_message,
                 "action": "transfer_money"
             })
             
         elif predicted_intent == 'request_money':
-            print("Processing request money...")
-            # Workflow: intent classifier -> entity -> Mock response (Django disabled)
+            print("Processing request money - extracting entities...")
             entities = extract_entities(text, predicted_intent)
             
-            # MOCK RESPONSE - Django backend disabled for now
             if 'amount' in entities:
-                django_response = {
-                    'status': 'success',
-                    'message': f'Mock: Money request for ₹{entities["amount"]} sent!'
-                }
                 assistant_message = f'Request for ₹{entities["amount"]}'
                 if 'recipient_name' in entities:
                     assistant_message += f' from {entities["recipient_name"]}'
-                assistant_message += ' sent (Mock mode - Django disabled)'
+                elif 'phone_number' in entities:
+                    assistant_message += f' from {entities["phone_number"]}'
+                elif 'upi_id' in entities:
+                    assistant_message += f' from {entities["upi_id"]}'
             else:
-                django_response = {
-                    'status': 'error',
-                    'error': 'Amount not specified',
-                    'suggestion': 'Try saying: "Request 500 from [name]"'
-                }
                 assistant_message = 'Amount not specified. Please mention the amount to request.'
             
             response.update({
                 "entities": entities,
-                "django_response": django_response,
                 "assistant_message": assistant_message,
                 "action": "request_money"
             })
             
         elif predicted_intent == 'check_balance':
-            print("Processing balance check...")
-            # MOCK RESPONSE - Django backend disabled for now
-            django_response = {
-                'status': 'success',
-                'balance': '5000.00'
-            }
-            assistant_message = f"Your current balance is ₹5000.00 (Mock mode - Django disabled)"
+            print("Processing balance check - returning to frontend...")
+            assistant_message = "Checking your balance"
             
             response.update({
-                "django_response": django_response,
                 "assistant_message": assistant_message,
                 "action": "check_balance"
             })
             
         else:
-            print(f"General/casual question detected, routing to chatbot...")
-            # For normal/casual/generic questions not related to the above 3, directly pass to chatbot
-            chatbot_response = get_chatbot_response(text)
+            print(f"General/casual question detected or unknown intent")
+            # For normal/casual/generic questions, return response with flag to route to Rasa
             response.update({
-                "assistant_message": chatbot_response,
-                "source": "chatbot",
-                "action": "general_conversation"
+                "assistant_message": "Let me help you with that.",
+                "source": "intent_classifier",
+                "action": "route_to_rasa",
+                "route_to_rasa": True
             })
         
         print(f"Response: {response}")

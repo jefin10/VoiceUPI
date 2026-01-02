@@ -2,10 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including dos2unix for line ending conversion
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     curl \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python dependencies
@@ -15,9 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Copy and set permissions for entrypoint script
+# Copy entrypoint script and fix line endings + permissions
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

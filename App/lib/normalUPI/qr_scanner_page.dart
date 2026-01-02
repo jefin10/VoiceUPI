@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import '../payToUpiId/payToUpiId.dart';
+import '../constants/app_colors.dart';
 import 'my_qr_page.dart';
 
 class QRScannerPage extends StatefulWidget {
@@ -39,14 +40,15 @@ class _QRScannerPageState extends State<QRScannerPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF2A2B5A),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             'Camera Permission Required',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
           ),
           content: const Text(
             'Please grant camera permission to scan QR codes.',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
           actions: [
             TextButton(
@@ -54,14 +56,14 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 openAppSettings();
               },
-              child: const Text('Settings'),
+              child: const Text('Settings', style: TextStyle(color: AppColors.primary)),
             ),
           ],
         );
@@ -72,86 +74,88 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
+      backgroundColor: Colors.black,
       body: Column(
         children: [
           // Custom App Bar
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Text(
-                    'Scan QR Code',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                      color: Colors.white,
-                    ),
-                    onPressed: _toggleFlash,
-                  ),
-                ],
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 8,
+              left: 8,
+              right: 8,
+              bottom: 16,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.primary, AppColors.primaryDark],
               ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const Text(
+                  'Scan & Pay',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                    color: Colors.white,
+                  ),
+                  onPressed: _toggleFlash,
+                ),
+              ],
             ),
           ),
 
           // Camera View
           Expanded(
             flex: 4,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFF6366F1),
-                  width: 2,
+            child: Stack(
+              children: [
+                MobileScanner(
+                  controller: controller,
+                  onDetect: _onQRDetected,
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Stack(
-                  children: [
-                    MobileScanner(
-                      controller: controller,
-                      onDetect: _onQRDetected,
-                    ),
-                    // Overlay
-                    _buildScannerOverlay(),
-                    // Corner decorations
-                    ..._buildCornerDecorations(),
-                    // Scanning animation
-                    if (_isScanning) _buildScanningAnimation(),
-                  ],
-                ),
-              ),
+                _buildScannerOverlay(),
+                ..._buildCornerDecorations(),
+                if (_isScanning) _buildScanningAnimation(),
+              ],
             ),
           ),
 
           // Bottom Section
-          Expanded(
-            flex: 2,
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_scannedData != null) ...[
                     _buildScannedDataDisplay(),
                   ] else ...[
                     _buildInstructions(),
                   ],
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   _buildActionButtons(),
+                  SizedBox(height: MediaQuery.of(context).padding.bottom),
                 ],
               ),
             ),
@@ -165,11 +169,11 @@ class _QRScannerPageState extends State<QRScannerPage> {
     return Container(
       decoration: ShapeDecoration(
         shape: QrScannerOverlayShape(
-          borderColor: const Color(0xFF10B981),
-          borderRadius: 20,
+          borderColor: AppColors.primary,
+          borderRadius: 16,
           borderLength: 30,
-          borderWidth: 8,
-          cutOutSize: 250,
+          borderWidth: 6,
+          cutOutSize: 280,
         ),
       ),
     );
@@ -177,25 +181,21 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   List<Widget> _buildCornerDecorations() {
     return [
-      // Top-left
       Positioned(
         top: 60,
         left: 60,
         child: _buildCornerDecoration(true, true),
       ),
-      // Top-right
       Positioned(
         top: 60,
         right: 60,
         child: _buildCornerDecoration(true, false),
       ),
-      // Bottom-left
       Positioned(
         bottom: 60,
         left: 60,
         child: _buildCornerDecoration(false, true),
       ),
-      // Bottom-right
       Positioned(
         bottom: 60,
         right: 60,
@@ -206,21 +206,21 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   Widget _buildCornerDecoration(bool isTop, bool isLeft) {
     return Container(
-      width: 25,
-      height: 25,
+      width: 24,
+      height: 24,
       decoration: BoxDecoration(
         border: Border(
           top: isTop
-              ? const BorderSide(color: Color(0xFF10B981), width: 3)
+              ? const BorderSide(color: AppColors.primary, width: 4)
               : BorderSide.none,
           bottom: !isTop
-              ? const BorderSide(color: Color(0xFF10B981), width: 3)
+              ? const BorderSide(color: AppColors.primary, width: 4)
               : BorderSide.none,
           left: isLeft
-              ? const BorderSide(color: Color(0xFF10B981), width: 3)
+              ? const BorderSide(color: AppColors.primary, width: 4)
               : BorderSide.none,
           right: !isLeft
-              ? const BorderSide(color: Color(0xFF10B981), width: 3)
+              ? const BorderSide(color: AppColors.primary, width: 4)
               : BorderSide.none,
         ),
       ),
@@ -230,30 +230,21 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Widget _buildScanningAnimation() {
     return Positioned.fill(
       child: Center(
-        child: Container(
-          width: 250,
-          height: 250,
-          child: Stack(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(seconds: 2),
-                curve: Curves.easeInOut,
-                child: Container(
-                  width: double.infinity,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        Color(0xFF10B981),
-                        Colors.transparent,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
+        child: SizedBox(
+          width: 280,
+          height: 280,
+          child: Container(
+            width: double.infinity,
+            height: 2,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  AppColors.primary.withOpacity(0.8),
+                  Colors.transparent,
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -262,73 +253,67 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   Widget _buildScannedDataDisplay() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.3),
-          width: 1,
-        ),
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.success.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.check_circle,
-                color: Color(0xFF10B981),
-                size: 20,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.check_circle, color: AppColors.success, size: 20),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               const Text(
-                'QR Code Scanned Successfully',
+                'QR Code Scanned',
                 style: TextStyle(
-                  color: Color(0xFF10B981),
-                  fontSize: 14,
+                  color: AppColors.success,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           if (_upiData != null) ...[
             _buildUpiInfo(),
           ] else ...[
             Text(
               _scannedData!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
-              maxLines: 3,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 15),
-          if (_upiData != null)
+          if (_upiData != null) ...[
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _proceedWithPayment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
                 ),
                 child: const Text(
-                  'Proceed to Payment',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'Proceed to Pay',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
+          ],
         ],
       ),
     );
@@ -339,56 +324,29 @@ class _QRScannerPageState extends State<QRScannerPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (_upiData!['pa'] != null) ...[
-          const Text(
-            'UPI ID:',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-          ),
+          const Text('UPI ID', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          const SizedBox(height: 2),
           Text(
             _upiData!['pa']!,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
         ],
         if (_upiData!['pn'] != null) ...[
-          const Text(
-            'Merchant Name:',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-          ),
+          const Text('Name', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          const SizedBox(height: 2),
           Text(
             _upiData!['pn']!,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
         ],
         if (_upiData!['am'] != null) ...[
-          const Text(
-            'Amount:',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-          ),
+          const Text('Amount', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          const SizedBox(height: 2),
           Text(
             '₹${_upiData!['am']}',
-            style: const TextStyle(
-              color: Color(0xFF10B981),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(color: AppColors.success, fontSize: 18, fontWeight: FontWeight.w700),
           ),
         ],
       ],
@@ -398,21 +356,27 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Widget _buildInstructions() {
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(Icons.qr_code_scanner, color: AppColors.primary, size: 40),
+        ),
+        const SizedBox(height: 16),
         const Text(
-          'Point your camera at a QR code',
+          'Point camera at QR code',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
+            color: AppColors.textPrimary,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'The QR code will be scanned automatically',
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 14,
-          ),
+        const SizedBox(height: 4),
+        const Text(
+          'Scan any UPI QR code to pay instantly',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
       ],
     );
@@ -422,21 +386,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildActionButton(
-          Icons.photo_library,
-          'Gallery',
-          _pickFromGallery,
-        ),
-        _buildActionButton(
-          Icons.qr_code,
-          'My QR',
-          _showMyQR,
-        ),
-        _buildActionButton(
-          Icons.refresh,
-          'Rescan',
-          _rescan,
-        ),
+        _buildActionButton(Icons.photo_library_outlined, 'Gallery', _pickFromGallery),
+        _buildActionButton(Icons.qr_code_rounded, 'My QR', _showMyQR),
+        _buildActionButton(Icons.refresh_rounded, 'Rescan', _rescan),
       ],
     );
   }
@@ -445,29 +397,22 @@ class _QRScannerPageState extends State<QRScannerPage> {
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A2B5A),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
-                width: 1,
-              ),
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icon,
-              color: const Color(0xFF6366F1),
-              size: 28,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 26),
           ),
           const SizedBox(height: 8),
           Text(
             label,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -571,7 +516,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF2A2B5A),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }

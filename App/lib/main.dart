@@ -12,7 +12,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
+      statusBarColor: AppColors.primary,
       statusBarIconBrightness: Brightness.light,
     ),
   );
@@ -49,11 +49,18 @@ class _MyAppState extends State<MyApp> {
       title: 'VoiceUPI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.dark(
-          primary: AppColors.primaryPurple,
-          secondary: AppColors.primaryViolet,
-          surface: AppColors.backgroundMedium,
-          background: AppColors.backgroundDark,
+        colorScheme: ColorScheme.light(
+          primary: AppColors.primary,
+          secondary: AppColors.primaryLight,
+          surface: AppColors.surface,
+          background: AppColors.surfaceLight,
+          error: AppColors.error,
+        ),
+        scaffoldBackgroundColor: AppColors.surfaceLight,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
         ),
         useMaterial3: true,
         fontFamily: 'Roboto',
@@ -188,118 +195,130 @@ class _BiometricAuthScreenState extends State<BiometricAuthScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                
-                // App Logo with pulse animation
-                ScaleTransition(
-                  scale: _pulseAnimation,
-                  child: Container(
-                    width: 120,
-                    height: 120,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.primary, AppColors.primaryDark],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(),
+                  
+                  // App Logo with pulse animation
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.fingerprint,
+                        size: 50,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // App Title
+                  const Text(
+                    'VoiceUPI',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Secure Payment App',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  
+                  // Status
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryPurple.withOpacity(0.4),
-                          blurRadius: 30,
-                          offset: const Offset(0, 15),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_isAuthenticating)
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          ),
+                        if (_isAuthenticating) const SizedBox(width: 12),
+                        Text(
+                          _authStatus,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.fingerprint,
-                      size: 60,
-                      color: Colors.white,
-                    ),
                   ),
-                ),
-                const SizedBox(height: 50),
-                
-                // App Title
-                const Text(
-                  'VoiceUPI',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textWhite,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Secure Payment App',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textGray,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                
-                // Status
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_isAuthenticating)
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(AppColors.primaryPurple),
-                          ),
-                        ),
-                      if (_isAuthenticating) const SizedBox(width: 12),
-                      Text(
-                        _authStatus,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textWhite,
-                          fontWeight: FontWeight.w500,
+                  
+                  const Spacer(),
+                  
+                  // Retry button
+                  if (!_isAuthenticating)
+                    TextButton(
+                      onPressed: _authenticateWithBiometrics,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                
-                const Spacer(),
-                
-                // Retry button
-                if (!_isAuthenticating)
-                  TextButton(
-                    onPressed: _authenticateWithBiometrics,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    ),
-                    child: const Text(
-                      'Try Again',
-                      style: TextStyle(
-                        color: AppColors.primaryPurple,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      child: const Text(
+                        'Try Again',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                  const SizedBox(height: 20),
+                ],
+              ),
           ),
         ),
-      ),
-    );
+      )));
+    
   }
 }

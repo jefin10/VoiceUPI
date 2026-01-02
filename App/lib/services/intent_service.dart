@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
+import 'rasa_service.dart';
 
 class IntentService {
   /// Process voice command and execute action
-  /// Example: "send 1000 rs to jefin" -> Send money to jefin
+  /// Flow: Voice text -> Flask (intent classification) -> 
+  ///       If confidence >= 70%: Extract keywords & route to Django for UPI actions
+  ///       If confidence < 70%: Route to Rasa for casual conversation
   static Future<Map<String, dynamic>> processVoiceCommand(String text) async {
     try {
       print('Processing voice command: $text');
@@ -27,27 +30,35 @@ class IntentService {
       final confidence = intentResponse['confidence_percentage'];
       final action = intentResponse['action'];
       final assistantMessage = intentResponse['assistant_message'];
+      final routeToRasa = intentResponse['route_to_rasa'] ?? false;
 
       print('Intent: $intent, Confidence: $confidence%');
       print('Action: $action');
 
-      // The /voice_command endpoint handles everything and returns ready-to-use data
-      // Check if Django backend returned an error
-      if (intentResponse['django_response'] != null &&
-          intentResponse['django_response']['status'] == 'error') {
+      // CONFIDENCE CHECK: If confidence < 70% OR flagged to route to Rasa, send to Rasa chatbot
+      if (routeToRasa || (confidence != null && confidence < 70.0)) {
+        print('Routing to Rasa (confidence: $confidence%)...');
+        
+        // Send to Rasa for casual conversation
+        final rasaResponse = await RasaService.sendMessage(text);
+        
         return {
-          'status': 'error',
+          'status': rasaResponse['status'],
           'intent': intent,
-          'message': assistantMessage ?? 'Failed to process request',
-          'action': action ?? 'error',
+          'action': 'chatbot',
+          'message': rasaResponse['message'],
           'confidence': confidence,
+          'source': 'rasa',
         };
       }
+
+      // HIGH CONFIDENCE (>= 70%): Process UPI-related actions
+      print('High confidence - Processing UPI action...');
 
       // Extract entities if available
       final entities = intentResponse['entities'];
 
-      // Step 2: Route based on action from backend
+      // Route based on action from Flask backend (Flask only classifies, frontend calls Django)
       if (action == 'transfer_money' && entities != null) {
         return {
           'status': 'success',

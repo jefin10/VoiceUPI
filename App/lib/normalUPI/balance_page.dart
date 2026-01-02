@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
+import '../constants/app_colors.dart';
 
 class BalancePage extends StatefulWidget {
   const BalancePage({super.key});
@@ -78,168 +79,95 @@ class _BalancePageState extends State<BalancePage> {
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-      backgroundColor: const Color(0xFF1A1B3A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Account Balance',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isBalanceVisible ? Icons.visibility_off : Icons.visibility,
-              color: Colors.white,
+    return Scaffold(
+      backgroundColor: AppColors.surfaceLight,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-            onPressed: () {
-              setState(() {
-                _isBalanceVisible = !_isBalanceVisible;
-              });
-            },
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main Balance Card
-            _buildMainBalanceCard(),
-            const SizedBox(height: 30),
-
-            // Quick Actions
-            _buildQuickActions(),
-            const SizedBox(height: 30),
-
-            // Linked Accounts
-            const Text(
-              'Linked Accounts',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _isBalanceVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isBalanceVisible = !_isBalanceVisible;
+                  });
+                },
               ),
-            ),
-            const SizedBox(height: 15),
-
-            // Account List
-            Expanded(
-              child: _buildAccountList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainBalanceCard() {
-    if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-    if (_error != null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(25),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6366F1),
-              Color(0xFF8B5CF6),
-              Color(0xFFA855F7),
             ],
-          ),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        child: Text(
-          _error!,
-          style: const TextStyle(color: Colors.white, fontSize: 18),
-        ),
-      );
-    }
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6),
-            Color(0xFFA855F7),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Balance',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                  ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Text(
-                  'UPI Wallet',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                child: SafeArea(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 20),
+                        Text(
+                          'Available Balance',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _isLoading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : Text(
+                                _isBalanceVisible
+                                    ? '₹${_currentBalance.toStringAsFixed(2)}'
+                                    : '₹••••••',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Text(
-            _isBalanceVisible 
-                ? '₹${_currentBalance.toStringAsFixed(2)}'
-                : '₹••••••',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Icon(
-                Icons.trending_up,
-                color: Color(0xFF10B981),
-                size: 16,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildQuickActions(),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Linked Accounts',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ..._accounts.map((account) => _buildAccountTile(account)),
+                  _buildAddAccountTile(),
+                ],
               ),
-              const SizedBox(width: 5),
-              Text(
-                '+₹2,450 this month',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -247,72 +175,51 @@ class _BalancePageState extends State<BalancePage> {
   }
 
   Widget _buildQuickActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildQuickAction(
-          Icons.add,
-          'Add Money',
-          const Color(0xFF10B981),
-          () {
-            // Add money functionality
-          },
-        ),
-        _buildQuickAction(
-          Icons.send,
-          'Send Money',
-          const Color(0xFF3B82F6),
-          () {
-            // Send money functionality
-          },
-        ),
-        _buildQuickAction(
-          Icons.request_page,
-          'Request',
-          const Color(0xFFF59E0B),
-          () {
-            // Request money functionality
-          },
-        ),
-        _buildQuickAction(
-          Icons.history,
-          'History',
-          const Color(0xFF8B5CF6),
-          () {
-            // Transaction history
-          },
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildQuickAction(Icons.add_circle_outline, 'Add Money', AppColors.success),
+          _buildQuickAction(Icons.send_rounded, 'Send', AppColors.primary),
+          _buildQuickAction(Icons.download_rounded, 'Request', AppColors.warning),
+          _buildQuickAction(Icons.receipt_long, 'History', AppColors.info),
+        ],
+      ),
     );
   }
 
-  Widget _buildQuickAction(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _buildQuickAction(IconData icon, String label, Color color) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {},
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: const Color(0xFF2A2B5A),
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: color.withOpacity(0.3),
-                width: 1,
-              ),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
           Text(
             label,
             style: const TextStyle(
-              color: Colors.white70,
+              color: AppColors.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -322,125 +229,112 @@ class _BalancePageState extends State<BalancePage> {
     );
   }
 
-  Widget _buildAccountList() {
-    return ListView.builder(
-      itemCount: _accounts.length + 1, // +1 for add account option
-      itemBuilder: (context, index) {
-        if (index == _accounts.length) {
-          return _buildAddAccountTile();
-        }
-        return _buildAccountTile(_accounts[index]);
-      },
-    );
-  }
-
   Widget _buildAccountTile(Map<String, dynamic> account) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2B5A),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: account['isDefault'] 
-              ? const Color(0xFF10B981).withOpacity(0.5)
-              : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(
-              Icons.account_balance,
-              color: Color(0xFF6366F1),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      account['bank'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (account['isDefault'])
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'DEFAULT',
-                          style: TextStyle(
-                            color: Color(0xFF10B981),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      account['accountNumber'],
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      _isBalanceVisible 
-                          ? '₹${account['balance'].toStringAsFixed(2)}'
-                          : '₹••••••',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: account['isDefault']
+            ? Border.all(color: AppColors.success.withOpacity(0.5), width: 1.5)
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.account_balance,
+            color: AppColors.primary,
+            size: 22,
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                account['bank'],
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (account['isDefault'])
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'PRIMARY',
+                  style: TextStyle(
+                    color: AppColors.success,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                account['accountNumber'],
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                _isBalanceVisible
+                    ? '₹${account['balance'].toStringAsFixed(2)}'
+                    : '₹••••••',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: AppColors.textSecondary,
+        ),
       ),
     );
   }
 
   Widget _buildAddAccountTile() {
     return GestureDetector(
-      onTap: () {
-        // Add new account functionality
-      },
+      onTap: () {},
       child: Container(
-        margin: const EdgeInsets.only(bottom: 15),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2B5A),
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFF6366F1).withOpacity(0.3),
+            color: AppColors.primary.withOpacity(0.3),
             width: 1,
             style: BorderStyle.solid,
           ),
@@ -448,26 +342,31 @@ class _BalancePageState extends State<BalancePage> {
         child: Row(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(15),
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.add,
-                color: Color(0xFF6366F1),
+                Icons.add_rounded,
+                color: AppColors.primary,
                 size: 24,
               ),
             ),
-            const SizedBox(width: 15),
+            const SizedBox(width: 16),
             const Text(
               'Add New Bank Account',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+                color: AppColors.primary,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.chevron_right,
+              color: AppColors.primary,
             ),
           ],
         ),
