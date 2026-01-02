@@ -4,7 +4,7 @@
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'constants/api_constants.dart';
+import 'api_constants.dart';
 
 // Example 1: Simple GET request with query parameters
 Future<void> getProfileExample(String phoneNumber) async {

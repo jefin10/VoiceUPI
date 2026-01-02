@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Rasa
+.rasa/
+*.tar.gz
+
+# Testing
+tests/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

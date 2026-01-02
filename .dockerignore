@@ -1,0 +1,31 @@
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Documentation
+README.md
+*.md
+
+# Docker
+docker-compose.override.yml
+
+# Flutter/Dart (not needed in backend containers)
+App/
+
+# Test files
+test_*.py
+test_*.html

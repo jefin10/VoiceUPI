@@ -1,0 +1,5 @@
+venv/
+./venv
+.rasa/
+__pycache__/
+./venv
